@@ -4,7 +4,7 @@ export default function Header({ lastUpdated }) {
       <div className="flex items-center gap-2">
         <span className="text-2xl">🌾</span>
         <div>
-          <div className="font-bold text-base text-slate-900 leading-tight">Presyo PH</div>
+          <div className="font-bold text-base text-slate-900 leading-tight">PresyOn</div>
           <div className="text-xs text-slate-400">Mga presyo ngayon sa NCR</div>
         </div>
       </div>
