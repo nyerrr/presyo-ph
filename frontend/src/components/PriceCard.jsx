@@ -1,11 +1,5 @@
-const CATEGORY_COLORS = {
-  grains: 'bg-amber-400',
-  meat: 'bg-red-400',
-  poultry: 'bg-orange-400',
-  fish: 'bg-blue-400',
-  vegetables: 'bg-green-400',
-  fuel: 'bg-purple-400',
-}
+import { CATEGORY_COLORS } from '../constants/categories'
+
 
 export default function PriceCard({ item, onClick, selected }) {
   const dotColor = CATEGORY_COLORS[item.category] || 'bg-slate-400'
