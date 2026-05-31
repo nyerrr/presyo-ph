@@ -84,8 +84,8 @@ export default function Alerts({ prices }) {
 
   return (
     <div className="pb-24 px-4">
-      <h2 className="text-lg font-bold text-slate-800 mt-4 mb-1">Price Alerts</h2>
-      <p className="text-xs text-slate-400 mb-4">Rule-based alerts from recent price movements</p>
+      <h2 className="text-lg font-bold text-slate-800 mt-4 mb-1">Mga Alerto</h2>
+      <p className="text-xs text-slate-400 mb-4">Batay sa mga kamakailang pagbabago ng presyo</p>
 
       {loading ? (
         <div className="flex items-center justify-center h-48 text-slate-400 text-sm">

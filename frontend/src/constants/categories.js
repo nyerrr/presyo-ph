@@ -1,11 +1,11 @@
 export const CATEGORIES = [
-  { key: 'all', label: 'All' },
-  { key: 'grains', label: 'Grains' },
-  { key: 'meat', label: 'Meat' },
-  { key: 'poultry', label: 'Poultry' },
-  { key: 'fish', label: 'Fish' },
-  { key: 'vegetables', label: 'Vegetables' },
-  { key: 'fuel', label: 'Fuel' },
+  { key: 'all', label: 'Lahat' },
+  { key: 'grains', label: 'Bigas' },
+  { key: 'meat', label: 'Karne' },
+  { key: 'poultry', label: 'Manok' },
+  { key: 'fish', label: 'Isda' },
+  { key: 'vegetables', label: 'Gulay' },
+  { key: 'fuel', label: 'Gasolina' },
 ]
 
 export const CATEGORY_COLORS = {

@@ -60,7 +60,7 @@ export default function Trends({ prices }) {
 
   return (
     <div className="pb-24 px-4">
-      <h2 className="text-lg font-bold text-slate-800 mt-4 mb-3">Price Trends</h2>
+      <h2 className="text-lg font-bold text-slate-800 mt-4 mb-3">Trend ng Presyo</h2>
 
       {/* Commodity selector */}
       <div className="flex gap-2 overflow-x-auto pb-2 mb-4">

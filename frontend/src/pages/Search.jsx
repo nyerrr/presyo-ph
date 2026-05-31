@@ -46,7 +46,7 @@ export default function Search({ prices }) {
 
   return (
     <div className="pb-24 px-4">
-      <h2 className="text-lg font-bold text-slate-800 mt-4 mb-3">Search Prices</h2>
+      <h2 className="text-lg font-bold text-slate-800 mt-4 mb-3">Hanapin ang Presyo</h2>
 
       {/* Search input */}
       <div className="relative mb-4">

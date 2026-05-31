@@ -32,7 +32,7 @@ function getRecommendation(history, currentPrice) {
       badgeColor: 'bg-red-100 text-red-700',
       reason: risingAll
         ? 'Price has been rising 3 periods in a row — may continue to increase.'
-        : `Price is ${aboveAvg.toFixed(1)}% above average — consider buying less for now.`,
+        : `Price is ${aboveAvg.toFixed(1)}% above average - consider buying less for now.`,
     }
   }
 
@@ -88,8 +88,8 @@ export default function BuyWait({ prices }) {
 
   return (
     <div className="pb-24 px-4">
-      <h2 className="text-lg font-bold text-slate-800 mt-4 mb-1">Buy Now or Wait?</h2>
-      <p className="text-xs text-slate-400 mb-4">Based on recent price trends and 6-month averages</p>
+      <h2 className="text-lg font-bold text-slate-800 mt-4 mb-1">Bumili o Maghintay?</h2>
+      <p className="text-xs text-slate-400 mb-4">Batay sa mga kamakailang trend ng presyo at 6-month averages</p>
 
       {/* Filter tabs */}
       <div className="flex gap-2 overflow-x-auto pb-2 mb-4">

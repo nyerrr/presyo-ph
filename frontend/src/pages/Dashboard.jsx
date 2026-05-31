@@ -1,10 +1,10 @@
+import { useState } from 'react'
 import PriceGrid from '../components/PriceGrid'
 import SummaryCards from '../components/SummaryCards'
 import CategoryFilter from '../components/CategoryFilter'
 import ChartPanel from '../components/ChartPanel'
-import { useState } from 'react'
 
-export default function Dashboard({ prices, selected, onSelect, avgChange, highPressure, lastUpdated, history }) {
+export default function Dashboard({ prices, selected, onSelect, avgChange, highPressure, history }) {
   const [category, setCategory] = useState('all')
 
   const filtered = category === 'all'
@@ -12,7 +12,7 @@ export default function Dashboard({ prices, selected, onSelect, avgChange, highP
     : prices.filter(p => p.category === category)
 
   return (
-    <div className="pb-20">
+    <div className="pb-24 px-4 pt-3">
       <SummaryCards
         total={prices.length}
         avgChange={avgChange}
@@ -24,18 +24,14 @@ export default function Dashboard({ prices, selected, onSelect, avgChange, highP
         onChange={setCategory}
       />
 
-      <div className="px-4">
-        <PriceGrid
-          prices={filtered}
-          selected={selected}
-          onSelect={onSelect}
-        />
-      </div>
+      <PriceGrid
+        prices={filtered}
+        selected={selected}
+        onSelect={onSelect}
+      />
 
       {selected && (
-        <div className="px-4 mt-4">
-          <ChartPanel item={selected} history={history} />
-        </div>
+        <ChartPanel item={selected} history={history} />
       )}
     </div>
   )
