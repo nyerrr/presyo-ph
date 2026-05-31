@@ -1,0 +1,83 @@
+name: Presyo PH — Price Scrapers
+
+on:
+  schedule:
+    # PSA updates twice a month (1st and 15th) — run day after
+    - cron: '0 1 2,16 * *'   # 9am PHT on 2nd and 16th of each month
+    
+    # DOE updates every Tuesday — run Tuesday at 9am PHT (1am UTC)
+    - cron: '0 1 * * 2'      # Every Tuesday at 9am PHT
+
+  # Allow manual trigger from GitHub Actions UI
+  workflow_dispatch:
+    inputs:
+      scraper:
+        description: 'Which scraper to run'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - psa
+          - doe
+
+jobs:
+  run-psa-scraper:
+    name: PSA Food Prices
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'workflow_dispatch' && 
+      (github.event.inputs.scraper == 'psa' || github.event.inputs.scraper == 'all') ||
+      github.event_name == 'schedule'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: scraper/package-lock.json
+
+      - name: Install dependencies
+        working-directory: scraper
+        run: npm ci
+
+      - name: Run PSA scraper
+        working-directory: scraper
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: node psa-scraper.js
+
+  run-doe-scraper:
+    name: DOE Fuel Prices
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'workflow_dispatch' && 
+      (github.event.inputs.scraper == 'doe' || github.event.inputs.scraper == 'all') ||
+      github.event_name == 'schedule'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: scraper/package-lock.json
+
+      - name: Install dependencies
+        working-directory: scraper
+        run: npm ci
+
+      - name: Run DOE scraper
+        working-directory: scraper
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: node doe-scraper.js
