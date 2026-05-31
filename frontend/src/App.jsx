@@ -2,22 +2,21 @@ import { useEffect, useState } from 'react'
 import { supabase } from './supabase'
 
 import Header from './components/Header'
-import CategoryFilter from './components/CategoryFilter'
-import SummaryCards from './components/SummaryCards'
-import PriceGrid from './components/PriceGrid'
-import ChartPanel from './components/ChartPanel'
-
-import { CATEGORIES } from './constants/categories'
+import BottomNav from './components/BottomNav'
+import Dashboard from './pages/Dashboard'
+import Trends from './pages/Trends'
+import Alerts from './pages/Alerts'
+import Search from './pages/Search'
+import BuyWait from './pages/BuyWait'
 
 export default function App() {
   const [prices, setPrices] = useState([])
   const [history, setHistory] = useState([])
   const [selected, setSelected] = useState(null)
-  const [category, setCategory] = useState('all')
   const [loading, setLoading] = useState(true)
   const [lastUpdated, setLastUpdated] = useState(null)
+  const [activePage, setActivePage] = useState('dashboard')
 
-  // ---------- LOAD PRICES ----------
   useEffect(() => {
     async function load() {
       const { data: latestData } = await supabase
@@ -44,20 +43,15 @@ export default function App() {
       setSelected(enriched[0] || null)
 
       const dates = latestData?.map(p => new Date(p.scraped_at)) || []
-      if (dates.length) {
-        setLastUpdated(new Date(Math.max(...dates)))
-      }
+      if (dates.length) setLastUpdated(new Date(Math.max(...dates)))
 
       setLoading(false)
     }
-
     load()
   }, [])
 
-  // ---------- LOAD HISTORY ----------
   useEffect(() => {
     if (!selected) return
-
     async function loadHistory() {
       const { data } = await supabase
         .from('price_readings')
@@ -69,69 +63,68 @@ export default function App() {
       setHistory(
         data?.map(d => ({
           date: new Date(d.scraped_at).toLocaleDateString('en-PH', {
-            month: 'short',
-            day: 'numeric'
+            month: 'short', day: 'numeric'
           }),
           price: d.price
         })) || []
       )
     }
-
     loadHistory()
   }, [selected])
 
-  // ---------- DERIVED DATA ----------
-  const filtered =
-    category === 'all'
-      ? prices
-      : prices.filter(p => p.category === category)
-
+  const changedPrices = prices.filter(p => p.pct_change !== null)
+  const avgChange = changedPrices.length > 0
+    ? (changedPrices.reduce((s, p) => s + (p.pct_change || 0), 0) / changedPrices.length).toFixed(1)
+    : 0
   const highPressure = prices.filter(p => p.pct_change > 5).length
 
-  const changedPrices = prices.filter(p => p.pct_change !== null)
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="text-center">
+        <div className="text-4xl mb-3">🌾</div>
+        <div className="text-slate-400">Loading prices...</div>
+      </div>
+    </div>
+  )
 
-  const avgChange =
-    changedPrices.length > 0
-      ? (
-          changedPrices.reduce((s, p) => s + (p.pct_change || 0), 0) /
-          changedPrices.length
-        ).toFixed(1)
-      : 0
-
-  if (loading) return <div>Loading...</div>
+  function renderPage() {
+    switch (activePage) {
+      case 'dashboard':
+        return (
+          <Dashboard
+            prices={prices}
+            selected={selected}
+            onSelect={setSelected}
+            avgChange={avgChange}
+            highPressure={highPressure}
+            lastUpdated={lastUpdated}
+            history={history}
+          />
+        )
+      case 'trends':
+        return <Trends prices={prices} />
+      case 'alerts':
+        return <Alerts prices={prices} />
+      case 'search':
+        return <Search prices={prices} />
+      case 'buywait':
+        return <BuyWait prices={prices} />
+      default:
+        return (
+          <div className="flex items-center justify-center h-64 text-slate-400">
+            Coming soon...
+          </div>
+        )
+    }
+  }
 
   return (
     <div className="min-h-screen bg-slate-50">
       <Header lastUpdated={lastUpdated} />
-
-      <div className="max-w-6xl mx-auto p-6">
-
-        <SummaryCards
-          total={prices.length}
-          avgChange={avgChange}
-          highPressure={highPressure}
-        />
-
-        <CategoryFilter
-          active={category}
-          onChange={setCategory}
-        />
-
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-5 items-start">
-
-          <PriceGrid
-            prices={filtered}
-            selected={selected}
-            onSelect={setSelected}
-          />
-
-          <ChartPanel
-            item={selected}
-            history={history}
-          />
-
-        </div>
+      <div className="pt-2">
+        {renderPage()}
       </div>
+      <BottomNav active={activePage} onChange={setActivePage} />
     </div>
   )
 }

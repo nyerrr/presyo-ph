@@ -1,6 +1,6 @@
 export default function Header({ lastUpdated }) {
   return (
-    <div className="bg-white border-b border-slate-200 px-8 py-4 flex justify-between items-center">
+    <div className="bg-white border-b border-slate-200 px-4 py-4 flex justify-between items-center">
       <div className="flex items-center gap-3">
         <span className="text-2xl">🌾</span>
         <div>
