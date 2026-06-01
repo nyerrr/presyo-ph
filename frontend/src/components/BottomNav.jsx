@@ -1,5 +1,5 @@
 const TABS = [
-  { key: 'dashboard', label: 'Presyo', icon: '🏠' },
+  { key: 'dashboard', label: 'Presyo', icon: '₱' },
   { key: 'trends', label: 'Trend', icon: '📈' },
   { key: 'alerts', label: 'Alerto', icon: '⚠️' },
   { key: 'search', label: 'Hanapin', icon: '🔍' },
