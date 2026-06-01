@@ -1,8 +1,18 @@
+import { useEffect } from 'react'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
 import PressureBadge from './PressureBadge'
+import { useAIExplanation } from '../hooks/useAIExplanation'
 
 export default function ChartPanel({ item, history }) {
   if (!item) return null
+
+  const { explanation, loading, explain } = useAIExplanation()
+
+  useEffect(() => {
+    if (item && history.length >= 2) {
+      explain(item, history)
+    }
+  }, [item?.commodity, history.length])
 
   return (
     <div className="bg-white border border-slate-100 rounded-2xl p-4 mt-4">
@@ -41,19 +51,19 @@ export default function ChartPanel({ item, history }) {
         </div>
       )}
 
-      {item.pct_change !== null && item.pct_change !== undefined && (
-        <div className="mt-3 p-3 bg-slate-50 rounded-xl text-xs text-slate-600">
-          <span className="font-semibold">Trend: </span>
-          {item.pct_change > 0
-            ? `Tumaas ng ${item.pct_change.toFixed(1)}% mula noong nakaraang period. `
-            : `Bumaba ng ${Math.abs(item.pct_change).toFixed(1)}% mula noong nakaraang period. `}
-          {item.pct_change > 10
-            ? 'Mabilis na pagtaas — mag-ingat sa pagbili.'
-            : item.pct_change > 0
-            ? 'Bahagyang pagtaas.'
-            : 'Bumababa ang presyo.'}
-        </div>
-      )}
+      {/* AI Explanation */}
+      <div className="mt-3 p-3 bg-slate-50 rounded-xl text-xs text-slate-600 min-h-12">
+        {loading ? (
+          <div className="flex items-center gap-2 text-slate-400">
+            <div className="w-3 h-3 rounded-full bg-blue-400 animate-pulse" />
+            Sinusuri ng AI...
+          </div>
+        ) : explanation ? (
+          <p>{explanation}</p>
+        ) : (
+          <p className="text-slate-400">Walang sapat na datos para sa paliwanag.</p>
+        )}
+      </div>
     </div>
   )
 }

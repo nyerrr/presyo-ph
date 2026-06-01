@@ -9,6 +9,7 @@ import Alerts from './pages/Alerts'
 import Search from './pages/Search'
 import BuyWait from './pages/BuyWait'
 import Regional from './pages/Regional'
+import ChatBot from './components/ChatBot'
 
 export default function App() {
   const [prices, setPrices] = useState([])
@@ -134,11 +135,12 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <Header lastUpdated={lastUpdated} />
-      <div>
-        {renderPage()}
-      </div>
-      <BottomNav active={activePage} onChange={setActivePage} />
+    <Header lastUpdated={lastUpdated} />
+    <div className="pt-2">
+      {renderPage()}
     </div>
+    <BottomNav active={activePage} onChange={setActivePage} />
+    <ChatBot prices={prices} />
+  </div>
   )
 }
