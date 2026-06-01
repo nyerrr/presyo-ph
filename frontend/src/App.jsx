@@ -9,7 +9,7 @@ import Alerts from './pages/Alerts'
 import Search from './pages/Search'
 import BuyWait from './pages/BuyWait'
 import Regional from './pages/Regional'
-import ChatBot from './components/ChatBot'
+import ChatBot from './components/Chatbot'
 
 export default function App() {
   const [prices, setPrices] = useState([])
