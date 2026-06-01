@@ -8,6 +8,7 @@ import Trends from './pages/Trends'
 import Alerts from './pages/Alerts'
 import Search from './pages/Search'
 import BuyWait from './pages/BuyWait'
+import Regional from './pages/Regional'
 
 export default function App() {
   const [prices, setPrices] = useState([])
@@ -109,6 +110,8 @@ export default function App() {
         return <Search prices={prices} />
       case 'buywait':
         return <BuyWait prices={prices} />
+      case 'regional':
+        return <Regional />
       default:
         return (
           <div className="flex items-center justify-center h-64 text-slate-400">
