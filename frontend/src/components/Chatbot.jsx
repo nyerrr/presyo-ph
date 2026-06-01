@@ -3,20 +3,34 @@ import { useState, useRef, useEffect } from 'react'
 const SYSTEM_PROMPT = `Ikaw si "Presyo", isang price tracking assistant para sa Pilipinas.
 
 MAHALAGA: Ikaw ay may REAL-TIME na presyo mula sa PSA at DA CALABARZON. 
-HUWAG KAILANMAN sabihing wala kang updated na impormasyon.
 LAGING gamitin ang presyo na ibinibigay sa iyo sa ibaba.
 
-Kung tinatanong ang presyo ng isang produkto, DIREKTANG sabihin ang presyo mula sa listahan.
-Kung wala sa listahan, sabihin na hindi available sa iyong datos ngayon.
+MAHIGPIT NA PANUNTUNAN:
+- Sagutin LAMANG ang mga tanong tungkol sa presyo ng pagkain, gulay, karne, isda, gasolina, at cost of living sa Pilipinas
+- Kung ang tanong ay HINDI related sa presyo o bilihin, sabihin: "Pasensya na, ang Presyo AI ay para lamang sa mga tanong tungkol sa presyo ng mga bilihin."
+- HUWAG magbigay ng medikal, emosyonal, legal, o personal na payo
+- Kung may nagsasabi ng emotional distress, sabihin: "Pasensya na, hindi ako ang tamang kausap para dito. Mangyaring humingi ng tulong sa isang taong pinagkakatiwalaan mo."
 
 Magsalita sa Taglish. 2-3 pangungusap lang. Simple at direkta.`
 
+const MAX_MESSAGES = 10
+const COOLDOWN_MS = 3000
+
+const OFF_TOPIC_KEYWORDS = [
+  'mahal kita', 'girlfriend', 'boyfriend', 'nalulungkot', 'hurt', 'sakit ng puso',
+  'vent', 'feelings', 'nararamdaman', 'depressed', 'anxious', 'stressed',
+  'problema ko', 'ex ko', 'breakup', 'iniiwan', 'nag-iisa', 'cry', 'iyak',
+  'suicide', 'die', 'mamatay', 'pamilya ko', 'kaibigan ko', 'trabaho ko',
+  'i love', 'miss you', 'sawi', 'heartbroken', 'galit ako', 'nasaktan'
+]
+
+function isOffTopic(text) {
+  const lower = text.toLowerCase()
+  return OFF_TOPIC_KEYWORDS.some(k => lower.includes(k))
+}
+
 export default function ChatBot({ prices }) {
   const [open, setOpen] = useState(false)
-  const [lastSent, setLastSent] = useState(0)
-  const [messageCount, setMessageCount] = useState(0)
-  const MAX_MESSAGES = 10
-  const COOLDOWN_MS = 3000
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
@@ -24,24 +38,28 @@ export default function ChatBot({ prices }) {
     }
   ])
   const [input, setInput] = useState('')
+  const [showLimitModal, setShowLimitModal] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [displayCount, setDisplayCount] = useState(0)
   const bottomRef = useRef(null)
+  const messageCountRef = useRef(0)
+  const lastSentRef = useRef(0)
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  // Build price context from current data — NCR only for simplicity
-    const priceContext = prices
-      .map(p => `${p.display_name} (${p.region}): ₱${p.price}/${p.unit}`)
-      .join('\n')
+  const priceContext = prices
+    .map(p => `${p.display_name} (${p.region}): ₱${p.price}/${p.unit}`)
+    .join('\n')
 
   async function sendMessage() {
     if (!input.trim() || loading) return
 
-    // Rate limiting — cooldown
     const now = Date.now()
-    if (now - lastSent < COOLDOWN_MS) {
+
+    // Cooldown check
+    if (now - lastSentRef.current < COOLDOWN_MS) {
       setMessages(prev => [...prev, {
         role: 'assistant',
         content: 'Sandali lang! Hintayin mong matapos ang aking sagot bago magtanong ulit. 😊'
@@ -49,17 +67,29 @@ export default function ChatBot({ prices }) {
       return
     }
 
-    // Rate limiting — max messages
-    if (messageCount >= MAX_MESSAGES) {
-      setMessages(prev => [...prev, {
-        role: 'assistant',
-        content: 'Naabot na ang limitasyon ng chat ngayon. I-refresh ang page para magsimula ulit. Salamat! 🌾'
-      }])
+    // Max messages check
+    if (messageCountRef.current >= MAX_MESSAGES) {
+      setShowLimitModal(true)
       return
     }
 
-    setLastSent(now)
-    setMessageCount(prev => prev + 1)
+    // Off-topic check
+    if (isOffTopic(input.trim())) {
+      setMessages(prev => [...prev,
+        { role: 'user', content: input.trim() },
+        {
+          role: 'assistant',
+          content: 'Pasensya na, ang Presyo AI ay para lamang sa mga tanong tungkol sa presyo ng mga bilihin. Para sa personal na usapin, mangyaring kausapin ang isang taong pinagkakatiwalaan mo. 🙏'
+        }
+      ])
+      setInput('')
+      return
+    }
+
+    // Increment counters
+    lastSentRef.current = now
+    messageCountRef.current += 1
+    setDisplayCount(messageCountRef.current)
 
     const userMessage = { role: 'user', content: input.trim() }
     const newMessages = [...messages, userMessage]
@@ -128,8 +158,13 @@ export default function ChatBot({ prices }) {
                   <div className="text-xs text-green-500 font-medium">● Online</div>
                 </div>
               </div>
-              <button onClick={() => setOpen(false)}
-                className="text-slate-400 text-xl cursor-pointer">✕</button>
+              <div className="flex items-center gap-2">
+                {displayCount > 0 && (
+                  <span className="text-xs text-slate-400">{MAX_MESSAGES - displayCount}/{MAX_MESSAGES}</span>
+                )}
+                <button onClick={() => setOpen(false)}
+                  className="text-slate-400 text-xl cursor-pointer">✕</button>
+              </div>
             </div>
 
             {/* Messages */}
@@ -162,12 +197,13 @@ export default function ChatBot({ prices }) {
               )}
               <div ref={bottomRef} />
             </div>
-            {/* Message count indicator */}
-              {messageCount > 7 && (
-                <div className="px-4 pb-1 text-center text-xs text-slate-400">
-                  {MAX_MESSAGES - messageCount} na tanong na lang ang natitira
-                </div>
-              )}
+
+            {/* Message count warning */}
+            {displayCount > 7 && displayCount < MAX_MESSAGES && (
+              <div className="px-4 pb-1 text-center text-xs text-orange-400">
+                {MAX_MESSAGES - displayCount} na tanong na lang ang natitira
+              </div>
+            )}
 
             {/* Suggested questions */}
             {messages.length === 1 && (
@@ -194,10 +230,11 @@ export default function ChatBot({ prices }) {
                 onKeyDown={e => e.key === 'Enter' && sendMessage()}
                 placeholder="Magtanong tungkol sa presyo..."
                 className="flex-1 px-4 py-2.5 rounded-full border border-slate-200 text-sm focus:outline-none focus:border-blue-400"
+                disabled={messageCountRef.current >= MAX_MESSAGES}
               />
               <button
                 onClick={sendMessage}
-                disabled={loading || !input.trim()}
+                disabled={loading || !input.trim() || messageCountRef.current >= MAX_MESSAGES}
                 className="w-10 h-10 rounded-full flex items-center justify-center cursor-pointer disabled:opacity-50"
                 style={{ background: 'linear-gradient(135deg, #1a56a0, #0f3d7a)' }}
               >
@@ -207,6 +244,30 @@ export default function ChatBot({ prices }) {
           </div>
         </div>
       )}
+      {/* Limit reached modal */}
+        {showLimitModal && (
+          <div className="fixed inset-z-60 flex items-center justify-center">
+            <div className="bg-white rounded-3xl p-6 mx-6 text-center shadow-xl">
+              <div className="text-4xl mb-3">🌾</div>
+              <div className="font-bold text-slate-800 text-lg mb-2">
+                Naabot na ang iyong limitasyon!
+              </div>
+              <div className="text-sm text-slate-500 mb-5">
+                10 tanong na ang iyong nagamit ngayon. Bumalik bukas para sa bagong mga tanong!
+              </div>
+              <button
+                onClick={() => {
+                  setShowLimitModal(false)
+                  setOpen(false)
+                }}
+                className="w-full py-3 rounded-2xl text-white font-semibold cursor-pointer"
+                style={{ background: 'linear-gradient(135deg, #1a56a0, #0f3d7a)' }}
+              >
+                Sige, babalik ako bukas!
+              </button>
+            </div>
+          </div>
+        )}
     </>
   )
 }
