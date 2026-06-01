@@ -2,7 +2,7 @@ import { CATEGORIES } from '../constants/categories'
 
 export default function CategoryFilter({ active, onChange }) {
   return (
-    <div className="flex gap-2 mb-5 flex-wrap">
+    <div className="flex gap-2 mb-5 flex-wrap ">
       {CATEGORIES.map(c => (
         <button
           key={c.key}

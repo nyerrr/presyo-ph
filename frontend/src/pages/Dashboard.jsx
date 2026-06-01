@@ -12,27 +12,31 @@ export default function Dashboard({ prices, selected, onSelect, avgChange, highP
     : prices.filter(p => p.category === category)
 
   return (
-    <div className="pb-24 px-4 pt-3">
-      <SummaryCards
-        total={prices.length}
-        avgChange={avgChange}
-        highPressure={highPressure}
-      />
+    <div>
+      <div className="bg-blue-100">
+        <SummaryCards
+          total={prices.length}
+          avgChange={avgChange}
+          highPressure={highPressure}
+        />
+      </div>
 
-      <CategoryFilter
-        active={category}
-        onChange={setCategory}
-      />
+      <div className="px-4 pb-24">
+        <CategoryFilter
+          active={category}
+          onChange={setCategory}
+        />
 
-      <PriceGrid
-        prices={filtered}
-        selected={selected}
-        onSelect={onSelect}
-      />
+        <PriceGrid
+          prices={filtered}
+          selected={selected}
+          onSelect={onSelect}
+        />
 
-      {selected && (
-        <ChartPanel item={selected} history={history} />
-      )}
+        {selected && (
+          <ChartPanel item={selected} history={history} />
+        )}
+      </div>
     </div>
   )
 }

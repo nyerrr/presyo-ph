@@ -1,6 +1,6 @@
 export default function Header({ lastUpdated }) {
   return (
-    <div className="bg-white border-b border-slate-100 px-4 py-3 flex justify-between items-center">
+    <div className="bg-gray-100 border-b border-slate-200 px-4 py-3 flex justify-between items-center shadow-md">
       <div className="flex items-center gap-2">
         <span className="text-2xl">🌾</span>
         <div>
