@@ -17,6 +17,7 @@ export default function App() {
   const [loading, setLoading] = useState(true)
   const [lastUpdated, setLastUpdated] = useState(null)
   const [activePage, setActivePage] = useState('dashboard')
+  const [region, setRegion] = useState('NCR')
 
   useEffect(() => {
     async function load() {
@@ -41,7 +42,10 @@ export default function App() {
       })) || []
 
       setPrices(enriched)
-      setSelected(enriched[0] || null)
+
+      // Default selected = first NCR price
+      const ncrPrices = enriched.filter(p => p.region === 'NCR')
+      setSelected(ncrPrices[0] || enriched[0] || null)
 
       const dates = latestData?.map(p => new Date(p.scraped_at)) || []
       if (dates.length) setLastUpdated(new Date(Math.max(...dates)))
@@ -58,6 +62,7 @@ export default function App() {
         .from('price_readings')
         .select('price, scraped_at')
         .eq('commodity', selected.commodity)
+        .eq('region', selected.region || 'NCR')
         .order('scraped_at', { ascending: true })
         .limit(20)
 
@@ -100,16 +105,22 @@ export default function App() {
             highPressure={highPressure}
             lastUpdated={lastUpdated}
             history={history}
+            region={region}
+            onRegionChange={setRegion}
           />
         )
       case 'trends':
-        return <Trends prices={prices} />
+        return <Trends prices={prices.filter(p => p.region === region)} />
+
       case 'alerts':
-        return <Alerts prices={prices} />
+        return <Alerts prices={prices.filter(p => p.region === region)} />
+
       case 'search':
         return <Search prices={prices} />
+
       case 'buywait':
-        return <BuyWait prices={prices} />
+        return <BuyWait prices={prices.filter(p => p.region === region)} />
+
       case 'regional':
         return <Regional />
       default:
