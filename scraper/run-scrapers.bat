@@ -1,6 +1,8 @@
 @echo off
 cd /d "%USERPROFILE%\Documents\presyo-ph\scraper"
-node psa-scraper.js
-node doe-scraper.js
-echo Done! >> scraper-log.txt
+echo Running scrapers... >> scraper-log.txt
 date /t >> scraper-log.txt
+time /t >> scraper-log.txt
+node doe-scraper.js >> scraper-log.txt 2>&1
+node psa-scraper.js >> scraper-log.txt 2>&1
+echo Done. >> scraper-log.txt   

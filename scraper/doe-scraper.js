@@ -45,6 +45,19 @@ async function scrapeFuelPrices() {
   console.log(`✅ Found ${prices.length} fuel prices`)
   return prices
 }
+async function alreadyScrapedToday(supabaseUrl, supabaseKey) {
+  const today = new Date().toISOString().split('T')[0]
+  const response = await axios.get(
+    `${supabaseUrl}/rest/v1/price_readings?source=eq.fuelprice.ph&scraped_at=gte.${today}T00:00:00&limit=1`,
+    {
+      headers: {
+        apikey: supabaseKey,
+        Authorization: `Bearer ${supabaseKey}`,
+      }
+    }
+  )
+  return response.data.length > 0
+}
 
 async function savePricesToSupabase(prices) {
   const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -72,15 +85,21 @@ async function savePricesToSupabase(prices) {
 
 async function run() {
   try {
-    const prices = await scrapeFuelPrices();
+    const SUPABASE_URL = process.env.SUPABASE_URL
+    const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY
+
+    if (await alreadyScrapedToday(SUPABASE_URL, SUPABASE_KEY)) {
+      console.log('✅ Already scraped today — skipping')
+      return
+    }
+
+    const prices = await scrapeFuelPrices()
     if (prices.length > 0) {
-      await savePricesToSupabase(prices);
-    } else {
-      console.warn("⚠️  No prices found — page structure may have changed");
+      await savePricesToSupabase(prices)
     }
   } catch (error) {
-    console.error("❌ Scraper error:", error.message);
-    process.exit(1);
+    console.error('❌ Scraper error:', error.message)
+    process.exit(1)
   }
 }
 
