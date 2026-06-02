@@ -4,7 +4,7 @@ import { supabase } from '../supabase'
 const MONTH_NAMES = ['', 'Enero', 'Pebrero', 'Marso', 'Abril', 'Mayo', 'Hunyo',
   'Hulyo', 'Agosto', 'Setyembre', 'Oktubre', 'Nobyembre', 'Disyembre']
 
-export default function Calculator({ prices, session }) {
+export default function Calculator({ prices, session, region, onRegionChange }) {
   const [basket, setBasket] = useState({})
   const [historicalPrices, setHistoricalPrices] = useState({})
   const [compareMonth, setCompareMonth] = useState(1) // January
@@ -31,17 +31,18 @@ export default function Calculator({ prices, session }) {
     loadBasket()
   }, [session])
 
+  
+
   // Load historical prices for comparison month
   useEffect(() => {
     async function loadHistorical() {
       const { data } = await supabase
         .from('price_readings')
         .select('commodity, price, scraped_at')
-        .eq('region', 'NCR')
+        .eq('region', region)
         .gte('scraped_at', `2026-${String(compareMonth).padStart(2, '0')}-01`)
         .lt('scraped_at', `2026-${String(compareMonth + 1).padStart(2, '0')}-01`)
         .order('scraped_at', { ascending: true })
-
       const historical = {}
       data?.forEach(p => {
         if (!historical[p.commodity]) {
@@ -51,7 +52,7 @@ export default function Calculator({ prices, session }) {
       setHistoricalPrices(historical)
     }
     loadHistorical()
-  }, [compareMonth])
+  }, [compareMonth, region])
 
   async function saveBasket() {
     setSaving(true)
@@ -73,13 +74,13 @@ export default function Calculator({ prices, session }) {
   }
 
   // Calculate totals
-  const ncrPrices = prices.filter(p => p.region === 'NCR')
+  const regionPrices = prices.filter(p => p.region === region)
 
   let todayTotal = 0
   let thenTotal = 0
   const breakdown = []
 
-  ncrPrices.forEach(p => {
+  regionPrices.forEach(p => {
     const qty = basket[p.commodity] || 0
     if (qty <= 0) return
 
@@ -118,6 +119,23 @@ export default function Calculator({ prices, session }) {
     <div className="pb-24 px-4 pt-3">
       <h2 className="text-lg font-bold text-slate-800 mt-2 mb-1">Inflation Calculator</h2>
       <p className="text-xs text-slate-400 mb-4">Ilagay ang dami ng iyong binibili para makita ang epekto ng inflation</p>
+
+      {/* Region toggle */}
+        <div className="flex gap-2 mb-4">
+        {['NCR', 'CALABARZON'].map(r => (
+            <button
+            key={r}
+            onClick={() => onRegionChange(r)}
+            className={`px-5 py-2 rounded-full text-sm font-semibold border transition-all cursor-pointer
+                ${region === r
+                ? 'bg-blue-600 text-white border-blue-600'
+                : 'bg-white text-slate-500 border-slate-200'
+                }`}
+            >
+            {r}
+            </button>
+        ))}
+        </div>
 
       {/* Compare month selector */}
       <div className="bg-white rounded-2xl border border-slate-100 p-4 mb-4">
@@ -170,7 +188,7 @@ export default function Calculator({ prices, session }) {
 
       {/* Basket items */}
       <div className="flex flex-col gap-3 mb-4">
-        {ncrPrices.map(p => (
+        {regionPrices.map(p => (
           <div key={p.commodity} className="bg-white rounded-2xl border border-slate-100 p-4">
             <div className="flex justify-between items-center mb-2">
               <div className="flex items-center gap-2">
@@ -216,7 +234,7 @@ export default function Calculator({ prices, session }) {
         className="w-full py-3 rounded-2xl text-white font-semibold cursor-pointer disabled:opacity-50"
         style={{ background: 'linear-gradient(135deg, #1a56a0, #0f3d7a)' }}
       >
-        {saving ? 'Sino-save...' : '💾 I-save ang aking basket'}
+        {saving ? 'Sino-save...' : '🛒 I-save ang aking basket'}
       </button>
     </div>
   )

@@ -191,7 +191,7 @@ export default function App() {
         return <Regional />
       
       case 'calculator':
-        return <Calculator prices={prices} session={session} />
+        return <Calculator prices={prices} session={session} region={region} onRegionChange={setRegion} />
     
       case 'profile':
         return <Profile session={session} prices={prices} onNavigate={setActivePage} />
