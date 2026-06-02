@@ -10,16 +10,48 @@ import Search from './pages/Search'
 import BuyWait from './pages/BuyWait'
 import Regional from './pages/Regional'
 import ChatBot from './components/ChatBot'
+import Login from './pages/Login'
+import Calculator from './pages/Calculator'
+import Profile from './pages/Profile'
 
 export default function App() {
+  const [session, setSession] = useState(null)
+  const [loading, setLoading] = useState(true)
+
   const [prices, setPrices] = useState([])
   const [history, setHistory] = useState([])
   const [selected, setSelected] = useState(null)
-  const [loading, setLoading] = useState(true)
   const [lastUpdated, setLastUpdated] = useState(null)
   const [activePage, setActivePage] = useState('dashboard')
   const [region, setRegion] = useState('NCR')
 
+  // =========================
+  // AUTH
+  // =========================
+  useEffect(() => {
+    let mounted = true
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (!mounted) return
+      setSession(data.session)
+      setLoading(false)
+    })
+
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setSession(session)
+      }
+    )
+
+    return () => {
+      mounted = false
+      listener.subscription.unsubscribe()
+    }
+  }, [])
+
+  // =========================
+  // LOAD PRICES
+  // =========================
   useEffect(() => {
     async function load() {
       const { data: latestData } = await supabase
@@ -44,20 +76,26 @@ export default function App() {
 
       setPrices(enriched)
 
-      // Default selected = first NCR price
       const ncrPrices = enriched.filter(p => p.region === 'NCR')
       setSelected(ncrPrices[0] || enriched[0] || null)
 
       const dates = latestData?.map(p => new Date(p.scraped_at)) || []
-      if (dates.length) setLastUpdated(new Date(Math.max(...dates)))
+      if (dates.length) {
+        setLastUpdated(new Date(Math.max(...dates)))
+      }
 
       setLoading(false)
     }
+
     load()
   }, [])
 
+  // =========================
+  // LOAD HISTORY
+  // =========================
   useEffect(() => {
     if (!selected) return
+
     async function loadHistory() {
       const { data } = await supabase
         .from('price_readings')
@@ -70,30 +108,56 @@ export default function App() {
       setHistory(
         data?.map(d => ({
           date: new Date(d.scraped_at).toLocaleDateString('en-PH', {
-            month: 'short', day: 'numeric'
+            month: 'short',
+            day: 'numeric'
           }),
           price: d.price
         })) || []
       )
     }
+
     loadHistory()
   }, [selected])
 
+  // =========================
+  // DERIVED DATA
+  // =========================
   const changedPrices = prices.filter(p => p.pct_change !== null)
-  const avgChange = changedPrices.length > 0
-    ? (changedPrices.reduce((s, p) => s + (p.pct_change || 0), 0) / changedPrices.length).toFixed(1)
-    : 0
+
+  const avgChange =
+    changedPrices.length > 0
+      ? (
+          changedPrices.reduce((s, p) => s + (p.pct_change || 0), 0) /
+          changedPrices.length
+        ).toFixed(1)
+      : 0
+
   const highPressure = prices.filter(p => p.pct_change > 5).length
 
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50">
-      <div className="text-center">
-        <div className="text-4xl mb-3">🌾</div>
-        <div className="text-slate-400">Loading prices...</div>
+  // =========================
+  // LOADING STATE
+  // =========================
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="text-center">
+          <div className="text-4xl mb-3">🌾</div>
+          <div className="text-slate-400">Loading prices...</div>
+        </div>
       </div>
-    </div>
-  )
+    )
+  }
 
+  // =========================
+  // AUTH GUARD
+  // =========================
+  if (!session) {
+    return <Login />
+  }
+
+  // =========================
+  // PAGE ROUTER
+  // =========================
   function renderPage() {
     switch (activePage) {
       case 'dashboard':
@@ -110,6 +174,7 @@ export default function App() {
             onRegionChange={setRegion}
           />
         )
+
       case 'trends':
         return <Trends prices={prices.filter(p => p.region === region)} />
 
@@ -124,6 +189,13 @@ export default function App() {
 
       case 'regional':
         return <Regional />
+      
+      case 'calculator':
+        return <Calculator prices={prices} session={session} />
+    
+      case 'profile':
+        return <Profile session={session} prices={prices} onNavigate={setActivePage} />
+
       default:
         return (
           <div className="flex items-center justify-center h-64 text-slate-400">
@@ -133,14 +205,15 @@ export default function App() {
     }
   }
 
+  // =========================
+  // MAIN APP
+  // =========================
   return (
     <div className="min-h-screen bg-slate-50">
-    <Header lastUpdated={lastUpdated} />
-    <div className="pt-2">
+      <Header lastUpdated={lastUpdated} />
       {renderPage()}
+      <BottomNav active={activePage} onChange={setActivePage} />
+      <ChatBot prices={prices} />
     </div>
-    <BottomNav active={activePage} onChange={setActivePage} />
-    <ChatBot prices={prices} />
-  </div>
   )
 }
