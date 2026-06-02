@@ -1,29 +1,16 @@
-// DOE Fuel Price Scraper
-// Runs every Tuesday — DOE releases weekly NCR pump prices
-// Sources: https://doe.gov.ph/price-monitoring-charts
-
 const axios = require("axios");
 const cheerio = require("cheerio");
 require("dotenv").config();
 
-const DOE_URL = "https://doe.gov.ph/price-monitoring-charts?q=retail-pump-prices-metro-manila";
+const URL = "https://fuelprice.ph";
 
-const FUEL_MAP = {
-  gasoline: "fuel_gasoline_ron91",
-  "premium gasoline": "fuel_gasoline_ron95",
-  diesel: "fuel_diesel",
-  kerosene: "fuel_kerosene",
-};
+async function scrapeFuelPrices() {
+  console.log("⛽ Scraping fuelprice.ph...");
 
-async function scrapeDOEFuelPrices() {
-  console.log("⛽ Scraping DOE fuel prices...");
-
-  const response = await axios.get(DOE_URL, {
+  const response = await axios.get(URL, {
     headers: {
-      "User-Agent":
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-      Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-      Referer: "https://doe.gov.ph/",
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+      "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
     },
     timeout: 15000,
   });
@@ -31,42 +18,32 @@ async function scrapeDOEFuelPrices() {
   const $ = cheerio.load(response.data);
   const prices = [];
   const scrapedAt = new Date().toISOString();
+  const text = $("body").text().replace(/\s+/g, " ");
 
-  // DOE tables: fuel type | min price | max price | average
-  $("table").each((i, table) => {
-    $(table).find("tr").each((rowIndex, row) => {
-      if (rowIndex === 0) return;
+  const FUEL_MAP = [
+    { pattern: /Unleaded 91 - avg ₱([\d.]+)\/L/i, commodity: "fuel_gasoline_ron91" },
+    { pattern: /Premium 95 - avg ₱([\d.]+)\/L/i, commodity: "fuel_gasoline_ron95" },
+    { pattern: /Diesel - avg ₱([\d.]+)\/L/i, commodity: "fuel_diesel" },
+    { pattern: /Kerosene - avg ₱([\d.]+)\/L/i, commodity: "fuel_kerosene" },
+  ]
 
-      const cols = $(row).find("td");
-      if (cols.length < 3) return;
+  for (const fuel of FUEL_MAP) {
+    const match = text.match(fuel.pattern)
+    if (match) {
+      prices.push({
+        commodity: fuel.commodity,
+        price: parseFloat(match[1]),
+        unit: "liter",
+        region: "NCR",
+        source: "fuelprice.ph",
+        scraped_at: scrapedAt,
+      })
+      console.log(`  ${fuel.commodity}: ₱${match[1]}`)
+    }
+  }
 
-      const rawName = $(cols[0]).text().trim().toLowerCase();
-      const minPrice = parseFloat($(cols[1]).text().replace(/[₱,\s]/g, ""));
-      const maxPrice = parseFloat($(cols[2]).text().replace(/[₱,\s]/g, ""));
-      const avgPrice = parseFloat($(cols[3])?.text().replace(/[₱,\s]/g, "")) 
-        || ((minPrice + maxPrice) / 2);
-
-      const fuelKey = Object.keys(FUEL_MAP).find((key) =>
-        rawName.includes(key)
-      );
-
-      if (fuelKey && !isNaN(avgPrice)) {
-        prices.push({
-          commodity: FUEL_MAP[fuelKey],
-          display_name: rawName,
-          price: avgPrice,
-          price_min: minPrice,
-          price_max: maxPrice,
-          unit: "liter",
-          source: "DOE",
-          scraped_at: scrapedAt,
-        });
-      }
-    });
-  });
-
-  console.log(`✅ Found ${prices.length} fuel prices`);
-  return prices;
+  console.log(`✅ Found ${prices.length} fuel prices`)
+  return prices
 }
 
 async function savePricesToSupabase(prices) {
@@ -95,11 +72,11 @@ async function savePricesToSupabase(prices) {
 
 async function run() {
   try {
-    const prices = await scrapeDOEFuelPrices();
+    const prices = await scrapeFuelPrices();
     if (prices.length > 0) {
       await savePricesToSupabase(prices);
     } else {
-      console.warn("⚠️  No prices found — DOE page structure may have changed");
+      console.warn("⚠️  No prices found — page structure may have changed");
     }
   } catch (error) {
     console.error("❌ Scraper error:", error.message);
@@ -107,4 +84,4 @@ async function run() {
   }
 }
 
-run();
+run();  

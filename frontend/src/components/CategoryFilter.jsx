@@ -6,8 +6,8 @@ export default function CategoryFilter({ active, onChange }) {
       {CATEGORIES.map(c => (
         <button
           key={c.key}
-          onClick={() => onChange(c.key)}
-          className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors cursor-pointer
+          onClick={() => onChange(c.key)} 
+          className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors cursor-pointer shadow-sm 
             ${active === c.key
               ? 'border-blue-500 bg-blue-50 text-blue-700'
               : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'

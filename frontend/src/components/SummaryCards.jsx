@@ -8,8 +8,7 @@ const REGIONS = [
 export default function SummaryCards({ total, avgChange, highPressure, region, onRegionChange }) {
   return (
     <div className="mb-5" style={{
-      background: 'linear-gradient(160deg, #1a56a0 0%, #0f3d7a 100%)',
-      boxShadow: '0 8px 32px rgba(15, 61, 122, 0.25)'
+      background: 'linear-gradient(160deg, #1a56a0 0%, #0f3d7a 100%)'
     }}>
       {/* Region toggle */}
       <div className="flex px-4 pt-4 gap-2 mb-4">
