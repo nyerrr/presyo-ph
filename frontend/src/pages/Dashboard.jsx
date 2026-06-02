@@ -27,7 +27,7 @@ export default function Dashboard({ prices, selected, onSelect, avgChange, highP
   }, [region])
 
   return (
-    <div className="pb-24">
+    <div>
       <SummaryCards
         total={regionFiltered.length}
         avgChange={avgChange}

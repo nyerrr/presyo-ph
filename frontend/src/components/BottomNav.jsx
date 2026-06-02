@@ -1,10 +1,9 @@
 const TABS = [
-  { key: 'dashboard', label: 'Presyo', icon: '₱' },
-  { key: 'trends', label: 'Trend', icon: '↑' },
-  { key: 'alerts', label: 'Alerto', icon: '!' },
-  { key: 'search', label: 'Hanapin', icon: '🔍︎' },
-  { key: 'buywait', label: 'Bilhin?', icon: '💳' },
-  { key: 'regional', label: 'Rehiyon', icon: '🗺️' }
+  { key: 'dashboard', label: 'Presyo', icon: '🏠' },
+  { key: 'trends', label: 'Trend', icon: '📈' },
+  { key: 'search', label: 'Hanapin', icon: '🔍' },
+  { key: 'calculator', label: 'Kalkula', icon: '🧮' },
+  { key: 'profile', label: 'Profile', icon: '👤' },
 ]
 
 export default function BottomNav({ active, onChange }) {
