@@ -4,5 +4,5 @@ echo Running scrapers... >> scraper-log.txt
 date /t >> scraper-log.txt
 time /t >> scraper-log.txt
 node doe-scraper.js >> scraper-log.txt 2>&1
-node psa-scraper.js >> scraper-log.txt 2>&1
-echo Done. >> scraper-log.txt   
+node psa-excel-scraper.js >> scraper-log.txt 2>&1
+echo Done. >> scraper-log.txt

@@ -1,3 +1,11 @@
 ﻿scraper/.env
 scraper/node_modules/
+scraper/psa-latest.xlsx
+scraper/run-scrapers.bat
+scraper/scraper-log.txt
+scraper/da-calabarzon-latest.pdf
+scraper/test.pdf
+scraper/test-fuelprice.js
+scraper/test-pdf.mjs
 frontend/node_modules/
+frontend/.env.local
