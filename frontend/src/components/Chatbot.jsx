@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { supabase } from '../supabase'
 
 const SYSTEM_PROMPT = `Ikaw si "Presyo", isang price tracking assistant para sa Pilipinas.
 
@@ -40,7 +41,7 @@ function isOffTopic(text) {
   return !!matched
 }
 
-export default function ChatBot({ prices }) {
+export default function Chatbot({ prices, session }) {
   const [open, setOpen] = useState(false)
   const [messages, setMessages] = useState([
     {
@@ -56,6 +57,38 @@ export default function ChatBot({ prices }) {
   const messageCountRef = useRef(0)
   const lastSentRef = useRef(0)
 
+  async function getDailyCount() {
+    const today = new Date().toISOString().split('T')[0]
+    const { data } = await supabase
+      .from('chat_usage')
+      .select('count')
+      .eq('user_id', session.user.id)
+      .eq('date', today)
+      .single()
+    return data?.count || 0
+  }
+
+  async function incrementDailyCount() {
+    const today = new Date().toISOString().split('T')[0]
+    await supabase
+      .from('chat_usage')
+      .upsert({
+        user_id: session.user.id,
+        date: today,
+        count: (await getDailyCount()) + 1
+      }, { onConflict: 'user_id,date' })
+  }
+
+
+  useEffect(() => {
+    async function loadCount() {
+      const count = await getDailyCount()
+      messageCountRef.current = count
+      setDisplayCount(count)
+    }
+    if (session) loadCount()
+  }, [session])
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
@@ -65,8 +98,6 @@ export default function ChatBot({ prices }) {
     .join('\n')
 
   async function sendMessage() {
-    if (!input.trim() || loading) return
-    
     if (!input.trim() || loading) return
 
     const now = Date.now()
@@ -80,11 +111,11 @@ export default function ChatBot({ prices }) {
       return
     }
 
-    // Max messages check
-    if (messageCountRef.current >= MAX_MESSAGES) {
-      setShowLimitModal(true)
-      return
-    }
+    const dailyCount = await getDailyCount()
+      if (dailyCount >= MAX_MESSAGES) {
+        setShowLimitModal(true)
+        return
+      }
 
     // Off-topic check
     if (isOffTopic(input.trim())) {
@@ -102,6 +133,7 @@ export default function ChatBot({ prices }) {
     // Increment counters
     lastSentRef.current = now
     messageCountRef.current += 1
+    await incrementDailyCount()
     setDisplayCount(messageCountRef.current)
 
     const userMessage = { role: 'user', content: input.trim() }
@@ -259,7 +291,7 @@ export default function ChatBot({ prices }) {
       )}
       {/* Limit reached modal */}
         {showLimitModal && (
-          <div className="fixed inset-z-60 flex items-center justify-center">
+          <div className="fixed inset-0 z-60 flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.5)' }}>
             <div className="bg-white rounded-3xl p-6 mx-6 text-center shadow-xl">
               <div className="text-4xl mb-3">🌾</div>
               <div className="font-bold text-slate-800 text-lg mb-2">

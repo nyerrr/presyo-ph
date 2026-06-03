@@ -213,7 +213,7 @@ export default function App() {
       <Header lastUpdated={lastUpdated} />
       {renderPage()}
       <BottomNav active={activePage} onChange={setActivePage} />
-      <Chatbot prices={prices} />
+      <Chatbot prices={prices} session={session} />
     </div>
   )
 }
