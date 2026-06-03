@@ -142,26 +142,23 @@ export default function Chatbot({ prices, session }) {
     setInput('')
     setLoading(true)
 
-    try {
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o-mini',
-          max_tokens: 120,
-          messages: [
-            {
-              role: 'system',
-              content: `${SYSTEM_PROMPT}\n\nPINAKABAGONG PRESYO NGAYON:\n${priceContext}`
-            },
-            ...newMessages
-          ]
-        })
-      })
-
+   try {
+      const { data: { session: currentSession } } = await supabase.auth.getSession()
+      
+      const response = await fetch(
+        'https://oucqnulqudoygjspoxoz.supabase.co/functions/v1/chat',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${currentSession?.access_token}`
+          },
+          body: JSON.stringify({
+            messages: newMessages,
+            priceContext
+          })
+        }
+      )
       const data = await response.json()
       const reply = data.choices?.[0]?.message?.content || 'Sorry, hindi ko masagot yan ngayon.'
       setMessages(prev => [...prev, { role: 'assistant', content: reply }])
