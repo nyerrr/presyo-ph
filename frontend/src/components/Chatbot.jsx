@@ -5,11 +5,19 @@ const SYSTEM_PROMPT = `Ikaw si "Presyo", isang price tracking assistant para sa 
 MAHALAGA: Ikaw ay may REAL-TIME na presyo mula sa PSA at DA CALABARZON. 
 LAGING gamitin ang presyo na ibinibigay sa iyo sa ibaba.
 
-MAHIGPIT NA PANUNTUNAN:
-- Sagutin LAMANG ang mga tanong tungkol sa presyo ng pagkain, gulay, karne, isda, gasolina, at cost of living sa Pilipinas
-- Kung ang tanong ay HINDI related sa presyo o bilihin, sabihin: "Pasensya na, ang Presyo AI ay para lamang sa mga tanong tungkol sa presyo ng mga bilihin."
-- HUWAG magbigay ng medikal, emosyonal, legal, o personal na payo
-- Kung may nagsasabi ng emotional distress, sabihin: "Pasensya na, hindi ako ang tamang kausap para dito. Mangyaring humingi ng tulong sa isang taong pinagkakatiwalaan mo."
+Ang mga tanong na DAPAT mong sagutin:
+- Presyo ng pagkain, gulay, karne, isda, gasolina
+- Bakit mahal o mura ang isang produkto
+- Kung dapat bang mag-stock ng pagkain
+- Pagkumpara ng presyo sa iba't ibang panahon
+- Cost of living at inflation sa Pilipinas
+- Anumang tanong tungkol sa pamilihan at pamimili
+
+Ang mga tanong na HINDI mo sasagutin:
+- Personal na problema (breakup, relasyon, emosyon)
+- Medikal na tanong
+- Legal na tanong
+- Anumang hindi related sa presyo o pamimili
 
 Magsalita sa Taglish. 2-3 pangungusap lang. Simple at direkta.`
 
@@ -17,16 +25,19 @@ const MAX_MESSAGES = 10
 const COOLDOWN_MS = 3000
 
 const OFF_TOPIC_KEYWORDS = [
-  'mahal kita', 'girlfriend', 'boyfriend', 'nalulungkot', 'hurt', 'sakit ng puso',
-  'vent', 'feelings', 'nararamdaman', 'depressed', 'anxious', 'stressed',
-  'problema ko', 'ex ko', 'breakup', 'iniiwan', 'nag-iisa', 'cry', 'iyak',
-  'suicide', 'die', 'mamatay', 'pamilya ko', 'kaibigan ko', 'trabaho ko',
-  'i love', 'miss you', 'sawi', 'heartbroken', 'galit ako', 'nasaktan'
+  'girlfriend', 'boyfriend', 'nalulungkot', 'sakit ng puso',
+  'ex ko', 'breakup', 'iniiwan', 'nag-iisa',
+  'suicide', 'magpakamatay',
+  'i love you', 'miss you', 'sawi', 'heartbroken',
+  'nasaktan ako sa', 'galit ako sa kanya',
+  'depressed ako', 'anxious ako'
 ]
 
 function isOffTopic(text) {
   const lower = text.toLowerCase()
-  return OFF_TOPIC_KEYWORDS.some(k => lower.includes(k))
+  const matched = OFF_TOPIC_KEYWORDS.find(k => lower.includes(k))
+  if (matched) console.log('Blocked by keyword:', matched)
+  return !!matched
 }
 
 export default function ChatBot({ prices }) {
@@ -54,6 +65,8 @@ export default function ChatBot({ prices }) {
     .join('\n')
 
   async function sendMessage() {
+    if (!input.trim() || loading) return
+    
     if (!input.trim() || loading) return
 
     const now = Date.now()

@@ -9,7 +9,7 @@ import Alerts from './pages/Alerts'
 import Search from './pages/Search'
 import BuyWait from './pages/BuyWait'
 import Regional from './pages/Regional'
-import ChatBot from './components/Chatbot'
+import Chatbot from './components/Chatbot'
 import Login from './pages/Login'
 import Calculator from './pages/Calculator'
 import Profile from './pages/Profile'
@@ -213,7 +213,7 @@ export default function App() {
       <Header lastUpdated={lastUpdated} />
       {renderPage()}
       <BottomNav active={activePage} onChange={setActivePage} />
-      <ChatBot prices={prices} />
+      <Chatbot prices={prices} />
     </div>
   )
 }
