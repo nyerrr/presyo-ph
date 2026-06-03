@@ -9,3 +9,5 @@ scraper/test-fuelprice.js
 scraper/test-pdf.mjs
 frontend/node_modules/
 frontend/.env.local
+scraper/update-calabarzon.bat
+scraper/test-psa-excel.js
