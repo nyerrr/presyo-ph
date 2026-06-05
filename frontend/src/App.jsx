@@ -58,23 +58,22 @@ export default function App() {
       const { data: latestData } = await supabase
         .from('latest_prices')
         .select('*')
-        .order('scraped_at', { ascending: false })
 
       const { data: changesData } = await supabase
         .from('price_changes')
         .select('*')
-        .order('scraped_at', { ascending: false })
 
       const changeMap = {}
-      changesData?.forEach(c => { 
-        if (changeMap[c.commodity] === undefined) {
-          changeMap[c.commodity] = c.pct_change
+      changesData?.forEach(c => {
+        const key = `${c.commodity}|${c.region}`
+        if (changeMap[key] === undefined) {
+          changeMap[key] = c.pct_change
         }
       })
 
       const enriched = latestData?.map(p => ({
         ...p,
-        pct_change: changeMap[p.commodity] ?? null
+        pct_change: changeMap[`${p.commodity}|${p.region}`] ?? null
       })) || []
 
       setPrices(enriched)

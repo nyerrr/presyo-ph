@@ -1,64 +1,40 @@
-name: Presyo PH — Price Scrapers
+name: Daily Price Scraper
 
 on:
   schedule:
-    - cron: '0 1 2,16 * *'   # PSA — 2nd and 16th of month
-    - cron: '0 1 * * 2'      # DOE — every Tuesday
-  workflow_dispatch:
-    inputs:
-      scraper:
-        description: 'Which scraper to run'
-        required: true
-        default: 'all'
-        type: choice
-        options:
-          - all
-          - psa
-          - doe
+    - cron: '0 1 * * *'  # runs every day at 9AM Manila time (UTC+8)
+  workflow_dispatch:       # allows manual trigger from GitHub
 
 jobs:
-  run-psa-scraper:
-    name: PSA Food Prices
+  scrape:
     runs-on: ubuntu-latest
-    if: |
-      github.event_name == 'workflow_dispatch' && 
-      (github.event.inputs.scraper == 'psa' || github.event.inputs.scraper == 'all') ||
-      github.event_name == 'schedule'
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-          cache: 'npm'
-          cache-dependency-path: scraper/package-lock.json
-      - run: npm ci
-        working-directory: scraper
-      - name: Run PSA scraper
-        working-directory: scraper
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-        run: node psa-scraper.js
 
-  run-doe-scraper:
-    name: DOE Fuel Prices
-    runs-on: ubuntu-latest
-    if: |
-      github.event_name == 'workflow_dispatch' && 
-      (github.event.inputs.scraper == 'doe' || github.event.inputs.scraper == 'all') ||
-      github.event_name == 'schedule'
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: '24'
-          cache: 'npm'
-          cache-dependency-path: scraper/package-lock.json
-      - run: npm ci
-        working-directory: scraper
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+        working-directory: ./scraper
+
       - name: Run DOE scraper
-        working-directory: scraper
+        working-directory: ./scraper
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: node doe-scraper.js
+
+      - name: Run PSA Excel scraper
+        working-directory: ./scraper
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: node psa-excel-scraper.js
+
+      - name: Log completion
+        run: echo "✅ Scrapers completed at $(date)"

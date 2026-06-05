@@ -75,6 +75,22 @@ function parsePSAExcel() {
   return prices
 }
 
+async function filterNewPrices(prices, supabaseUrl, supabaseKey) {
+  const today = new Date().toISOString().split('T')[0]
+  const filtered = []
+
+  for (const price of prices) {
+    const res = await axios.get(
+      `${supabaseUrl}/rest/v1/price_readings?commodity=eq.${price.commodity}&region=eq.NCR&scraped_at=gte.${today}T00:00:00&limit=1`,
+      { headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` } }
+    )
+    if (res.data.length === 0) filtered.push(price)
+  }
+
+  console.log(`🔍 ${prices.length - filtered.length} already exist today, inserting ${filtered.length}`)
+  return filtered
+}
+
 async function savePricesToSupabase(prices) {
   const SUPABASE_URL = process.env.SUPABASE_URL
   const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY
@@ -99,6 +115,58 @@ async function savePricesToSupabase(prices) {
   console.log(`💾 Saved ${prices.length} PSA prices to Supabase`)
 }
 
+async function updatePriceChanges(prices) {
+  const SUPABASE_URL = process.env.SUPABASE_URL
+  const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY
+
+  for (const price of prices) {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    // Get previous price
+    const prevResponse = await axios.get(
+      `${SUPABASE_URL}/rest/v1/price_readings?commodity=eq.${price.commodity}&region=eq.NCR&scraped_at=lt.${today.toISOString()}&order=scraped_at.desc&limit=1`,
+      {
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization: `Bearer ${SUPABASE_KEY}`,
+        },
+      }
+    )
+
+    const prevData = prevResponse.data
+    const prevPrice = prevData.length > 0 ? prevData[0].price : price.price
+    const pctChange = prevPrice > 0
+      ? parseFloat(((price.price - prevPrice) / prevPrice * 100).toFixed(2))
+      : 0
+
+    // Upsert into price_changes
+    await axios.post(
+      `${SUPABASE_URL}/rest/v1/price_changes`,
+      {
+        commodity: price.commodity,
+        region: 'NCR',
+        current_price: price.price,
+        prev_price: prevPrice,
+        pct_change: pctChange,
+        scraped_at: price.scraped_at,
+      },
+      {
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization: `Bearer ${SUPABASE_KEY}`,
+          'Content-Type': 'application/json',
+          Prefer: 'resolution=merge-duplicates',
+        },
+      }
+    )
+
+    console.log(`📊 ${price.commodity}: ${prevPrice} → ${price.price} (${pctChange}%)`)
+  }
+
+  console.log('✅ price_changes updated')
+}
+
 async function run() {
   try {
     const prices = parsePSAExcel()
@@ -109,7 +177,12 @@ async function run() {
     }
 
     console.log(`✅ Found ${prices.length} prices`)
-    await savePricesToSupabase(prices)
+    const newPrices = await filterNewPrices(prices, process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY)
+    if (newPrices.length > 0) {
+      await savePricesToSupabase(newPrices)
+    } else {
+      console.log('✅ All prices already recorded today — skipping')
+    }
   } catch (error) {
     console.error('❌ Scraper error:', error.message)
     process.exit(1)
