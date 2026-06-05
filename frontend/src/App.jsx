@@ -58,14 +58,16 @@ export default function App() {
       const { data: latestData } = await supabase
         .from('latest_prices')
         .select('*')
+        .order('scraped_at', { ascending: false })
 
       const { data: changesData } = await supabase
         .from('price_changes')
         .select('*')
+        .order('scraped_at', { ascending: false })
 
       const changeMap = {}
-      changesData?.forEach(c => {
-        if (!changeMap[c.commodity]) {
+      changesData?.forEach(c => { 
+        if (changeMap[c.commodity] === undefined) {
           changeMap[c.commodity] = c.pct_change
         }
       })
@@ -134,7 +136,8 @@ export default function App() {
   // =========================
   // DERIVED DATA
   // =========================
-  const changedPrices = prices.filter(p => p.pct_change !== null)
+  const regionPrices = prices.filter(p => p.region === region)
+  const changedPrices = regionPrices.filter(p => p.pct_change !== null)
 
   const avgChange =
     changedPrices.length > 0
@@ -144,7 +147,9 @@ export default function App() {
         ).toFixed(1)
       : 0
 
-  const highPressure = prices.filter(p => p.pct_change > 5).length
+  const highPressure = regionPrices.filter(
+    p => p.pct_change > 5
+  ).length
 
   // =========================
   // LOADING STATE
