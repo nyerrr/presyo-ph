@@ -11,13 +11,15 @@ export default function Calculator({ prices, session, region, onRegionChange }) 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
 
-  // Load user's saved basket
+  // Load user's saved basket (most recent session)
   useEffect(() => {
     async function loadBasket() {
       const { data } = await supabase
         .from('user_baskets')
         .select('*')
         .eq('user_id', session.user.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
 
       if (data && data.length > 0) {
         const saved = {}
@@ -67,7 +69,7 @@ export default function Calculator({ prices, session, region, onRegionChange }) 
 
     await supabase
       .from('user_baskets')
-      .upsert(entries, { onConflict: 'user_id,commodity' })
+      .insert(entries) // Use insert for new sessions, not upsert
 
     setSaving(false)
     alert('Na-save na ang iyong basket!')
@@ -116,7 +118,7 @@ export default function Calculator({ prices, session, region, onRegionChange }) 
   )
 
   return (
-    <div className="pb-24 px-4 pt-3">
+    <div className="px-4 pt-3">
       <h2 className="text-lg font-bold text-slate-800 mt-2 mb-1">Inflation Calculator</h2>
       <p className="text-xs text-slate-400 mb-4">Ilagay ang dami ng iyong binibili para makita ang epekto ng inflation</p>
 

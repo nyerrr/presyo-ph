@@ -13,6 +13,7 @@ import Chatbot from './components/Chatbot'
 import Login from './pages/Login'
 import Calculator from './pages/Calculator'
 import Profile from './pages/Profile'
+import MyBaskets from './pages/MyBaskets'
 
 export default function App() {
   const [session, setSession] = useState(null)
@@ -193,6 +194,9 @@ export default function App() {
       case 'calculator':
         return <Calculator prices={prices} session={session} region={region} onRegionChange={setRegion} />
     
+      case 'basket':
+        return <MyBaskets session={session} prices={prices} onNavigate={setActivePage} />
+    
       case 'profile':
         return <Profile session={session} prices={prices} onNavigate={setActivePage} />
 
@@ -209,11 +213,13 @@ export default function App() {
   // MAIN APP
   // =========================
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="flex flex-col min-h-screen bg-slate-50">
       <Header lastUpdated={lastUpdated} />
-      {renderPage()}
-      <BottomNav active={activePage} onChange={setActivePage} />
+      <div className="flex-1 overflow-y-auto pb-20">
+        {renderPage()}
+      </div>
       <Chatbot prices={prices} session={session} />
+      <BottomNav active={activePage} onChange={setActivePage} />
     </div>
   )
 }

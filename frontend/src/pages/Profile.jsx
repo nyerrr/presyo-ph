@@ -2,7 +2,7 @@ import { supabase } from '../supabase'
 
 export default function Profile({ session, prices, onNavigate }) {
   return (
-    <div className="pb-24 px-4 pt-3">
+    <div className="px-4 pt-3">
       <h2 className="text-lg font-bold text-slate-800 mt-2 mb-4">Aking Profile</h2>
 
       {/* Account info */}
@@ -42,11 +42,21 @@ export default function Profile({ session, prices, onNavigate }) {
         </button>
         <button
           onClick={() => onNavigate('regional')}
-          className="w-full flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-slate-50"
+          className="w-full flex items-center justify-between px-4 py-3 border-b border-slate-100 cursor-pointer hover:bg-slate-50"
         >
           <div className="flex items-center gap-3">
             <span>🗺️</span>
             <span className="text-sm text-slate-700">Inflation sa Rehiyon</span>
+          </div>
+          <span className="text-slate-300">›</span>
+        </button>
+        <button
+          onClick={() => onNavigate('basket')}
+          className="w-full flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-slate-50"
+        >
+          <div className="flex items-center gap-3">
+            <span>🛒</span>
+            <span className="text-sm text-slate-700">Aking Basket</span>
           </div>
           <span className="text-slate-300">›</span>
         </button>

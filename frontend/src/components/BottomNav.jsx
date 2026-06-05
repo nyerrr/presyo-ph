@@ -8,7 +8,7 @@ const TABS = [
 
 export default function BottomNav({ active, onChange }) {
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 flex z-50 shadow-[0_-1px_8px_rgba(0,0,0,0.06)]">
+    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 flex shadow-[0_-1px_8px_rgba(0,0,0,0.06)] z-50">
       {TABS.map(tab => (
         <button
           key={tab.key}

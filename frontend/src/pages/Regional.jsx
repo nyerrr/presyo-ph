@@ -53,7 +53,7 @@ export default function Regional() {
   const availableMonths = [...new Set(data.map(d => d.month))].sort()
 
   return (
-    <div className="pb-24 px-4 pt-3">
+    <div className="px-4 pt-3">
       <h2 className="text-lg font-bold text-slate-800 mt-2 mb-1">Inflation sa Rehiyon</h2>
       <p className="text-xs text-slate-400 mb-4">NCR at CALABARZON - datos mula sa PSA</p>
 

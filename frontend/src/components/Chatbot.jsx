@@ -177,7 +177,7 @@ export default function Chatbot({ prices, session }) {
       {/* Floating button */}
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-20 right-4 z-40 w-14 h-14 rounded-full shadow-lg flex items-center justify-center cursor-pointer transition-transform active:scale-95"
+        className="fixed bottom-32 right-4 z-40 w-14 h-14 rounded-full shadow-lg flex items-center justify-center cursor-pointer transition-transform active:scale-95"
         style={{ background: 'linear-gradient(135deg, #1a56a0, #0f3d7a)' }}
       >
         <span className="text-2xl">🌾</span>
@@ -185,10 +185,10 @@ export default function Chatbot({ prices, session }) {
 
       {/* Chat drawer */}
       {open && (
-        <div className="fixed inset-0 z-50 flex flex-col" style={{ background: 'rgba(0,0,0,0.4)' }}
+        <div className="fixed inset-0 z-40 flex flex-col" style={{ background: 'rgba(0,0,0,0.4)' }}
           onClick={(e) => { if (e.target === e.currentTarget) setOpen(false) }}>
 
-          <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl flex flex-col"
+          <div className="absolute bottom-16 left-0 right-0 bg-white rounded-t-3xl flex flex-col"
             style={{ height: '75vh' }}>
 
             {/* Header */}

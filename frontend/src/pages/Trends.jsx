@@ -59,7 +59,7 @@ export default function Trends({ prices }) {
   const trend = getTrendLabel(history)
 
   return (
-    <div className="pb-24 px-4">
+    <div className="px-4">
       <h2 className="text-lg font-bold text-slate-800 mt-4 mb-3">Trend ng Presyo</h2>
 
       {/* Commodity selector */}

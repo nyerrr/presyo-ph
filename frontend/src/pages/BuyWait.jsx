@@ -87,7 +87,7 @@ export default function BuyWait({ prices }) {
   })
 
   return (
-    <div className="pb-24 px-4">
+    <div className="px-4">
       <h2 className="text-lg font-bold text-slate-800 mt-4 mb-1">Bumili o Maghintay?</h2>
       <p className="text-xs text-slate-400 mb-4">Batay sa mga kamakailang trend ng presyo at 6-month averages</p>
 

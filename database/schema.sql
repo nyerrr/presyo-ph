@@ -41,6 +41,20 @@ CREATE TABLE IF NOT EXISTS user_submissions (
 CREATE INDEX idx_user_submissions_commodity ON user_submissions (commodity, submitted_at DESC);
 CREATE INDEX idx_user_submissions_city ON user_submissions (city, submitted_at DESC);
 
+-- 2b. User baskets table (for saving shopping baskets)
+CREATE TABLE IF NOT EXISTS user_baskets (
+  id              BIGSERIAL PRIMARY KEY,
+  user_id         UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  commodity       TEXT NOT NULL,
+  quantity        NUMERIC(10, 2) NOT NULL,
+  unit            TEXT DEFAULT 'kg',
+  saved_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_user_baskets_user ON user_baskets (user_id, saved_at DESC);
+CREATE INDEX idx_user_baskets_commodity ON user_baskets (commodity);
+
 -- 3. Commodity reference table
 CREATE TABLE IF NOT EXISTS commodities (
   key             TEXT PRIMARY KEY,     -- e.g. "rice_well_milled"
@@ -116,6 +130,7 @@ ORDER BY r.scraped_at DESC, ABS((r.price - r.prev_price) / r.prev_price) DESC;
 -- 6. Enable Row Level Security (good practice)
 ALTER TABLE price_readings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_submissions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_baskets ENABLE ROW LEVEL SECURITY;
 
 -- Allow public reads on price_readings and commodities
 CREATE POLICY "Public can read prices" ON price_readings FOR SELECT USING (true);
@@ -124,3 +139,8 @@ CREATE POLICY "Public can read commodities" ON commodities FOR SELECT USING (tru
 -- Allow anyone to submit prices (for crowdsourcing)
 CREATE POLICY "Anyone can submit prices" ON user_submissions FOR INSERT WITH CHECK (true);
 CREATE POLICY "Public can read submissions" ON user_submissions FOR SELECT USING (true);
+
+-- User baskets policies (users can only access their own)
+CREATE POLICY "Users can read their own baskets" ON user_baskets FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert their own baskets" ON user_baskets FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can delete their own baskets" ON user_baskets FOR DELETE USING (auth.uid() = user_id);
