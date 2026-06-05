@@ -104,17 +104,28 @@ export default function App() {
         .eq('commodity', selected.commodity)
         .eq('region', selected.region || 'NCR')
         .order('scraped_at', { ascending: true })
-        .limit(20)
+        .limit(100) // Get more entries to ensure variety of dates
 
-      setHistory(
-        data?.map(d => ({
-          date: new Date(d.scraped_at).toLocaleDateString('en-PH', {
-            month: 'short',
-            day: 'numeric'
-          }),
-          price: d.price
-        })) || []
-      )
+      // Group by date and get average price per date
+      const groupedByDate = {}
+      data?.forEach(d => {
+        const dateKey = new Date(d.scraped_at).toLocaleDateString('en-PH', {
+          month: 'short',
+          day: 'numeric'
+        })
+        if (!groupedByDate[dateKey]) {
+          groupedByDate[dateKey] = []
+        }
+        groupedByDate[dateKey].push(d.price)
+      })
+
+      const chartData = Object.entries(groupedByDate)
+        .map(([date, prices]) => ({
+          date,
+          price: Math.round(prices.reduce((a, b) => a + b, 0) / prices.length * 100) / 100
+        }))
+
+      setHistory(chartData)
     }
 
     loadHistory()

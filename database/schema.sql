@@ -77,12 +77,27 @@ INSERT INTO commodities (key, display_name, category, unit, icon, sort_order) VA
   ('fish_bangus',           'Bangus',               'fish',       'kg',     '🐟', 8),
   ('vegetable_tomato',      'Tomato',               'vegetables', 'kg',     '🍅', 9),
   ('vegetable_ampalaya',    'Ampalaya',             'vegetables', 'kg',     '🥬', 10),
-  ('vegetable_baguio_beans','Baguio Beans',         'vegetables', 'kg',     '🫘', 11),
-  ('vegetable_cabbage',     'Repolyo (Cabbage)',    'vegetables', 'kg',     '🥬', 12),
-  ('fuel_gasoline_ron91',   'Gasoline RON 91',      'fuel',       'liter',  '⛽', 13),
-  ('fuel_gasoline_ron95',   'Gasoline RON 95',      'fuel',       'liter',  '⛽', 14),
-  ('fuel_diesel',           'Diesel',               'fuel',       'liter',  '⛽', 15),
-  ('fuel_kerosene',         'Kerosene',             'fuel',       'liter',  '🪔', 16)
+  ('vegetable_eggplant',    'Eggplant',             'vegetables', 'kg',     '🍆', 11),
+  ('vegetable_squash',      'Squash',               'vegetables', 'kg',     '🎃', 12),
+  ('vegetable_baguio_beans','Baguio Beans',         'vegetables', 'kg',     '🫘', 13),
+  ('vegetable_cabbage',     'Repolyo (Cabbage)',    'vegetables', 'kg',     '🥬', 14),
+  ('vegetable_carrot',      'Carrot',               'vegetables', 'kg',     '🥕', 15),
+  ('vegetable_onion_red',   'Red Onion',            'vegetables', 'kg',     '🧅', 16),
+  ('vegetable_pechay',      'Pechay',               'vegetables', 'kg',     '🥬', 17),
+  ('vegetable_spinach',     'Spinach',              'vegetables', 'kg',     '🥬', 18),
+  ('vegetable_okra',        'Okra',                 'vegetables', 'kg',     '🥬', 19),
+  ('vegetable_string_beans','String Beans',         'vegetables', 'kg',     '🫘', 20),
+  ('vegetable_lettuce',     'Lettuce',              'vegetables', 'kg',     '🥬', 21),
+  ('vegetable_radish',      'Radish',               'vegetables', 'kg',     '🥬', 22),
+  ('fish_tilapia',          'Tilapia',              'fish',       'kg',     '🐟', 23),
+  ('fish_dalagang_bukod',   'Dalagang Bukod',       'fish',       'kg',     '🐟', 24),
+  ('vegetable_mango',       'Mango',                'vegetables', 'kg',     '🥭', 25),
+  ('cooking_oil_palm',      'Cooking Oil',          'others',     'liter',  '🫗', 26),
+  ('sugar_brown',           'Brown Sugar',          'others',     'kg',     '🍯', 27),
+  ('fuel_gasoline_ron91',   'Gasoline RON 91',      'fuel',       'liter',  '⛽', 28),
+  ('fuel_gasoline_ron95',   'Gasoline RON 95',      'fuel',       'liter',  '⛽', 29),
+  ('fuel_diesel',           'Diesel',               'fuel',       'liter',  '⛽', 30),
+  ('fuel_kerosene',         'Kerosene',             'fuel',       'liter',  '🪔', 31)
 ON CONFLICT (key) DO NOTHING;
 
 -- 4. Helpful view: latest price per commodity

@@ -83,7 +83,7 @@ export default function Alerts({ prices }) {
   const alerts = getAlerts(prices, histories)
 
   return (
-    <div className="pb-24 px-4">
+    <div className="px-4">
       <h2 className="text-lg font-bold text-slate-800 mt-4 mb-1">Mga Alerto</h2>
       <p className="text-xs text-slate-400 mb-4">Batay sa mga kamakailang pagbabago ng presyo</p>
 
