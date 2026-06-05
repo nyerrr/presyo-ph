@@ -18,10 +18,18 @@ const COMMODITY_MAP = {
   // Vegetables
   'ampalaya': 'vegetable_ampalaya',
   'tomato': 'vegetable_tomato',
+  'eggplant': 'vegetable_eggplant',
+  'squash': 'vegetable_squash',
   'carrots, local': 'vegetable_carrot',
   'habichuelas/baguio beans': 'vegetable_baguio_beans',
   'cabbage (rare ball)': 'vegetable_cabbage',
   'red onion, local': 'vegetable_onion_red',
+  'pechay': 'vegetable_pechay',
+  'spinach': 'vegetable_spinach',
+  'okra': 'vegetable_okra',
+  'string beans': 'vegetable_string_beans',
+  'lettuce': 'vegetable_lettuce',
+  'radish': 'vegetable_radish',
   // Meat
   'pork belly (liempo), local': 'pork_liempo',
   'pork picnic (kasim), local': 'pork_kasim',
@@ -30,6 +38,7 @@ const COMMODITY_MAP = {
   'galunggong, local': 'fish_galunggong',
   'bangus, large': 'fish_bangus',
   'tilapia': 'fish_tilapia',
+  'dalagang bukod': 'fish_dalagang_bukod',
   // Others
   'sugar (brown)': 'sugar_brown',
   'mango (carabao)': 'vegetable_mango',
